@@ -26,11 +26,8 @@ void ConnectWithoutDSN(SQLHANDLE &env, SQLHANDLE &dbc) {
 // Connect to a database with extra keywords provided by Power Query SDK
 void ConnectWithPowerQuerySDK(SQLHANDLE &env, SQLHANDLE &dbc) {
 	std::string conn_str = "DRIVER={DuckDB Driver};database=" + GetTesterDirectory() + ";" +
-                          "custom_user_agent=powerbi/v0.0(DuckDB);" +
-                          "Trusted_Connection=yes;" +
-                          "UID=user1;" +
-                          "PWD=password1;" +
-                          "allow_unsigned_extensions=true;";
+	                       "custom_user_agent=powerbi/v0.0(DuckDB);" + "Trusted_Connection=yes;" + "UID=user1;" +
+	                       "PWD=password1;" + "allow_unsigned_extensions=true;";
 	SQLCHAR str[1024];
 	SQLSMALLINT strl;
 
