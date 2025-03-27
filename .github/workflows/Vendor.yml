@@ -74,17 +74,21 @@ jobs:
         if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
         run: |
             export MSG="$(git show -s --format=%s)"
-            export BODY="Changes: [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})"
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
             echo "${{ secrets.GH_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
             gh auth login --with-token < token.txt
+            # This command will fail if PR already exists on vendoring branch
             gh pr create \
-             --title "$MSG" \
-             --body "$BODY" \
+             --title "${MSG}" \
+             --body "Changes:" \
              --head "vendoring" \
-             --base "main" \
-            || gh pr comment vendoring \
-             --body "$MSG. $BODY"
+             --base "main" || true
+            export OLD_BODY="$(gh pr view vendoring --json body --jq '.body')" 
+            export BODY="${OLD_BODY}\n - [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})"
+            gh pr edit vendoring \
+             --body "${BODY}"
+            gh pr comment vendoring \
+             --body "${MSG}"
