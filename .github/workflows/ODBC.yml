@@ -2,10 +2,11 @@ name: ODBC
 on:
   push:
     branches-ignore:
-      - 'vendoring'
+      - vendoring
+      - main
   pull_request:
     branches-ignore:
-      - 'vendoring'
+      - vendoring
   workflow_dispatch:
   workflow_call:
   repository_dispatch:
