@@ -83,6 +83,6 @@ jobs:
             gh auth login --with-token < token.txt
             gh pr create \
              --body "" \
-             --title "$REV" \
+             --title "$MSG" \
              --head "vendoring" \
              --base "main"
