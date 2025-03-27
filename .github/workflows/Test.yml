@@ -23,7 +23,7 @@ jobs:
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
-            echo "steps.pr_comment_head_branch.outputs: ${{ steps.pr_comment_head_branch.outputs }}"
+            echo "steps.pr_comment_head_branch.outputs: ${{ toJSON(steps.pr_comment_head_branch.outputs) }}"
             echo "steps.pr_comment_head_branch.outputs.head_branch: ${{ steps.pr_comment_head_branch.outputs.head_branch }}"
             echo "${{ secrets.GH_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
