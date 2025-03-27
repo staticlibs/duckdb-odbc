@@ -61,8 +61,10 @@ jobs:
           python vendor.py --duckdb .git/duckdb
           git add src/duckdb CMakeLists.txt
           rm -rf .git/duckdb
+          git branch vendoring
+          git checkout vendoring
           git commit -m "Update vendored DuckDB sources to $REV"
-          git push --dry-run
+          git push -f --dry-run origin vendoring
           # Check if ahead of upstream branch
           # If yes, set a step output
           if [ $(git rev-list HEAD...origin/main --count) -gt 0 ]; then
@@ -70,16 +72,23 @@ jobs:
             echo "vendor=ok" >> "$GITHUB_OUTPUT"
           fi
 
-      - if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
-        run: |
-          git push -u origin HEAD
-
-      - name: Wait for push to complete
+      - name: Push the changes
         if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
-        run: sleep 10  # Give GitHub a moment to process the push
+        run: |
+          git push -f origin vendoring
 
-  rebuild:
-    needs: vendor
-    if: ${{ needs.vendor.outputs.did_vendor != '' }}
-    uses: ./.github/workflows/ODBC.yml
-    secrets: inherit
+      - name: create a PR
+        if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
+        run: |
+            export MSG="$(git show -s --format=%s)"
+            # Store the PAT in a file that can be accessed by the
+            # GitHub CLI.
+            echo "${{ secrets.GH_TOKEN }}" > token.txt
+            # Authorize GitHub CLI for the current repository and
+            # create a pull-requests containing the updates.
+            gh auth login --with-token < token.txt
+            gh pr create \
+             --body "" \
+             --title "$REV" \
+             --head "vendoring" \
+             --base "main"
