@@ -85,7 +85,7 @@ jobs:
              --title "$MSG" \
              --body "Changes: [https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }}](duckdb/duckdb#${{ steps.vendor.outputs.vendor }})" \
              --head "vendoring" \
-             --base "main"
+             --base "main" \
             || gh pr edit vendoring \
              --title "$MSG" \
              --body "Changes: [https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }}](duckdb/duckdb#${{ steps.vendor.outputs.vendor }})"
