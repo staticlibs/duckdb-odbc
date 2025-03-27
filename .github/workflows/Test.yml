@@ -14,11 +14,13 @@ jobs:
           ref: ${{ inputs.git_ref }}
 
       - name: Merge
-        if: github.repository == 'staticlibs/duckdb-odbc' && (github.event_name == 'pull_request' || (github.event_name == 'issue_comment' && github.event.issue.pull_request)) && github.head_ref == 'vendoring'
+        if: github.repository == 'staticlibs/duckdb-odbc' && github.head_ref == 'vendoring'
         shell: bash
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
+            echo "github.event_name: ${{ github.event_name }}"
+            echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
             echo "${{ secrets.GH_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
