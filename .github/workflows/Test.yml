@@ -14,7 +14,7 @@ jobs:
           fetch-depth: 0
 
       - name: PR comment HEAD branch
-        id: pr_comment_head_branch1
+        id: pr_comment_head_branch
         uses: ./.github/actions/pr_comment_head_branch
 
       - name: Merge
@@ -23,8 +23,8 @@ jobs:
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
-            echo "steps.pr_comment_head_branch1.outputs: ${{ toJSON(steps.pr_comment_head_branch1.outputs) }}"
-            echo "steps.pr_comment_head_branch1.outputs.head_branch: ${{ steps.pr_comment_head_branch1.outputs.head_branch }}"
+            echo "steps.pr_comment_head_branch.outputs: ${{ toJSON(steps.pr_comment_head_branch.outputs) }}"
+            echo "steps.pr_comment_head_branch.outputs.head_branch: ${{ steps.pr_comment_head_branch.outputs.head_branch }}"
             echo "${{ secrets.GH_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.

@@ -1,6 +1,11 @@
 name: "PR comment HEAD branch"
 description: "Sets a 'head_branch' output if the workflow was dispatched on a PR comment"
 
+outputs:
+  random-number:
+    description: "PR HEAD branch name"
+    value: ${{ steps.get_head_branch.outputs.head_branch }}
+
 runs:
   using: "composite"
   steps:
@@ -16,15 +21,7 @@ runs:
             repo: context.repo.repo,
             pull_number: pr_number
           });
-          core.exportVariable('PR_COMMENT_HEAD_BRANCH', pr.head.ref);
-
-    - name: "Set output"
-      id: set_output 
-      if: steps.get_head_branch.outcome == 'success'
-      shell: bash
-      run: |
-        echo "PR comment HEAD branch: ${{ env.PR_COMMENT_HEAD_BRANCH }}"
-        echo "head_branch=${{ env.PR_COMMENT_HEAD_BRANCH }}" >> "$GITHUB_OUTPUT"
+          core.exportVariable('GITHUB_OUTPUT', `head_branch=${pr.head.ref}`);
 
     - name: "Check output"
       id: check_output 
