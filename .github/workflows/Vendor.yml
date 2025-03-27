@@ -71,7 +71,7 @@ jobs:
         run: |
           git push -f origin vendoring
 
-      - name: create a PR
+      - name: Create a PR
         if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
         run: |
             export MSG="$(git show -s --format=%s)"
@@ -87,7 +87,7 @@ jobs:
              --body "Changes:" \
              --head "vendoring" \
              --base "main" || true
-            # Write existing body test to a file
+            # Write existing body text to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
             # Append change details to the body file
             echo " - $(date +"%Y-%m-%d %H:%M:%S"): [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})" >> body.txt

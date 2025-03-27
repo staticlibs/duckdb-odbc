@@ -1,0 +1,17 @@
+name: "PR comment HEAD branch"
+description: "Sets a 'head_branch' output if the workflow was dispatched on a PR comment"
+
+runs:
+  using: "composite"
+  steps:
+    - if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pr_number = context.payload.issue.number;
+          const { data: pr } = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: pr_number
+          });
+          core.setOutput("head_branch", pr.head.ref);

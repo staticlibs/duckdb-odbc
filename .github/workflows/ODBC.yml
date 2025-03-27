@@ -1,5 +1,11 @@
 name: ODBC
 on:
+  push:
+    branches-ignore:
+      - 'vendoring'
+  pull_request:
+    branches-ignore:
+      - 'vendoring'
   workflow_dispatch:
   workflow_call:
   repository_dispatch:
@@ -332,4 +338,49 @@ jobs:
       - name: Test Python ODBC
         shell: bash
         run: ./test/run_pyodbc_tests.sh
+
+  odbc-merge-vendoring-pr:
+    name: Merge vendoring PR 
+    needs:
+      - odbc-linux-amd64
+      - odbc-linux-aarch64
+      - odbc-windows-amd64
+      - debug
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get PR HEAD branch name
+        id: get_pr_details
+        if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const pr_number = context.payload.issue.number;
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr_number
+            });
+            core.setOutput("head_branch", pr.head.ref);
+
+      - name: Merge vendoring PR
+        if: github.repository == 'staticlibs/duckdb-odbc' && steps.get_pr_details.outputs.head_branch == 'vendoring'
+        shell: bash
+        run: |
+            # Store the PAT in a file that can be accessed by the
+            # GitHub CLI.
+            echo "${{ secrets.GH_TOKEN }}" > token.txt
+            # Authorize GitHub CLI for the current repository and
+            # create a pull-requests containing the updates.
+            gh auth login --with-token < token.txt
+            gh pr merge vendoring \
+             --subject "${{ github.event.comment.body }}" \
+             --body "" \
+             --rebase
+            git push --delete origin vendoring
+            git branch vendoring
+            git push -f origin vendoring
 
