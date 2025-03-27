@@ -15,6 +15,7 @@ runs:
       uses: actions/github-script@v6
       with:
         script: |
+          const fs = require('fs');
           const pr_number = context.payload.issue.number;
           const { data: pr } = await github.rest.pulls.get({
             owner: context.repo.owner,
