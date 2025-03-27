@@ -4,7 +4,9 @@ description: "Sets a 'head_branch' output if the workflow was dispatched on a PR
 runs:
   using: "composite"
   steps:
-    - if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+    - name: "Get HEAD branch"
+      id: get_head_branch
+      if: github.event_name == 'issue_comment' && github.event.issue.pull_request
       uses: actions/github-script@v6
       with:
         script: |
@@ -15,3 +17,10 @@ runs:
             pull_number: pr_number
           });
           core.setOutput("head_branch", pr.head.ref);
+
+    - name: "Set output"
+      if: steps.get_head_branch.outcome == 'success'
+      shell: bash
+      run: |
+        echo "PR comment HEAD branch: ${{ steps.get_head_branch.ouputs.head_branch }}"
+        echo "head_branch=${{ steps.get_head_branch.ouputs.head_branch }}" >> "$GITHUB_OUTPUT"
