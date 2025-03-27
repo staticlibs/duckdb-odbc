@@ -14,11 +14,12 @@ jobs:
           ref: ${{ inputs.git_ref }}
 
       - name: Merge
-        if: github.repository == 'staticlibs/duckdb-odbc' && github.head_ref == 'vendoring'
+        if: github.repository == 'staticlibs/duckdb-odbc'
         shell: bash
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
+            echo "github.head_ref: ${{ github.head_ref }}"
             echo "github.event_name: ${{ github.event_name }}"
             echo "github.event.issue.pull_request: ${{ github.event.issue.pull_request }}"
             echo "${{ secrets.GH_TOKEN }}" > token.txt
