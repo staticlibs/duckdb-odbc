@@ -12,13 +12,12 @@
 #include "duckdb/planner/table_filter.hpp"
 #include "duckdb/common/types/value.hpp"
 #include "duckdb/common/enums/expression_type.hpp"
-#include "duckdb/planner/filter/constant_filter.hpp"
 
 namespace duckdb {
 
 struct DynamicFilterData {
 	mutex lock;
-	unique_ptr<ConstantFilter> filter;
+	unique_ptr<TableFilter> filter;
 	bool initialized = false;
 
 	void SetValue(Value val);
