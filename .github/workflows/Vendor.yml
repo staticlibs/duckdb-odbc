@@ -74,6 +74,7 @@ jobs:
         if: steps.vendor.outputs.vendor != '' && github.event_name != 'pull_request'
         run: |
             export MSG="$(git show -s --format=%s)"
+            export BODY="Changes: [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})"
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
             echo "${{ secrets.GH_TOKEN }}" > token.txt
@@ -82,9 +83,8 @@ jobs:
             gh auth login --with-token < token.txt
             gh pr create \
              --title "$MSG" \
-             --body "Changes: [https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }}](duckdb/duckdb#${{ steps.vendor.outputs.vendor }})" \
+             --body "$BODY" \
              --head "vendoring" \
              --base "main" \
-            || gh pr edit vendoring \
-             --title "$MSG" \
-             --body "Changes: [https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }}](duckdb/duckdb#${{ steps.vendor.outputs.vendor }})"
+            || gh pr comment vendoring \
+             --body "$MSG\n$BODY"

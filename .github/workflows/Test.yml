@@ -1,6 +1,7 @@
 name: Test
 on:
   pull_request:
+  issue_comment:
 
 jobs:
   odbc-linux-amd64:
