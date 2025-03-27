@@ -19,8 +19,16 @@ runs:
           core.exportVariable('PR_COMMENT_HEAD_BRANCH', pr.head.ref);
 
     - name: "Set output"
+      id: set_output 
       if: steps.get_head_branch.outcome == 'success'
       shell: bash
       run: |
         echo "PR comment HEAD branch: ${{ env.PR_COMMENT_HEAD_BRANCH }}"
         echo "head_branch=${{ env.PR_COMMENT_HEAD_BRANCH }}" >> "$GITHUB_OUTPUT"
+
+    - name: "Check output"
+      id: check_output 
+      if: steps.set_output.outcome == 'success'
+      shell: bash
+      run: |
+        echo "steps.set_output.outputs.head_branch: ${{ steps.set_output.outputs.head_branch }}"
