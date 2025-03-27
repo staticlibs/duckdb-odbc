@@ -2,7 +2,7 @@ name: "PR comment HEAD branch"
 description: "Sets a 'head_branch' output if the workflow was dispatched on a PR comment"
 
 outputs:
-  random-number:
+  head_branch:
     description: "PR HEAD branch name"
     value: ${{ steps.get_head_branch.outputs.head_branch }}
 
