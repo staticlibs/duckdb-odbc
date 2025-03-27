@@ -52,6 +52,7 @@ jobs:
           git config --global user.email "github_bot@duckdblabs.com"
           git config --global user.name "DuckDB Labs GitHub Bot"
           git checkout vendoring
+          git rebase ${{ github.ref_name }}
           git rm -rf src/duckdb
           python vendor.py --duckdb .git/duckdb
           git add src/duckdb CMakeLists.txt
