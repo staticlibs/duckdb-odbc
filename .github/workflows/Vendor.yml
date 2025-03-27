@@ -87,4 +87,4 @@ jobs:
              --head "vendoring" \
              --base "main" \
             || gh pr comment vendoring \
-             --body "$MSG\n$BODY"
+             --body "$MSG. $BODY"
