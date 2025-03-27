@@ -22,7 +22,7 @@ jobs:
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
             gh auth login --with-token < token.txt
-            gh pr merge ${{ github.even.number }} \
+            gh pr merge ${{ github.event.pull_request.number }} \
              --subject "${{ github.event.pull_request.title }}" \
              --body "" \
              --rebase
