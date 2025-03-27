@@ -21,11 +21,7 @@ runs:
             repo: context.repo.repo,
             pull_number: pr_number
           });
-          core.exportVariable('GITHUB_OUTPUT', `head_branch=${pr.head.ref}`);
-
-    - name: "Check output"
-      id: check_output 
-      if: steps.set_output.outcome == 'success'
-      shell: bash
-      run: |
-        echo "steps.set_output.outputs.head_branch: ${{ steps.set_output.outputs.head_branch }}"
+          console.log(`HEAD branch name: ${pr.head.ref}`);
+          const outputPath = process.env.GITHUB_OUTPUT;
+          const output = `head_branch=${pr.head.ref}`;
+          fs.appendFileSync(outputPath, `${output}\n`);
