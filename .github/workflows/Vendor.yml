@@ -90,7 +90,7 @@ jobs:
             # Write existing body test to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
             # Append change details to the body file
-            echo " - [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})" >> body.txt
+            echo " - $(date +"%Y-%m-%d %H:%M:%S"): [duckdb/duckdb#${{ steps.vendor.outputs.vendor }}](https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }})" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr edit vendoring \
