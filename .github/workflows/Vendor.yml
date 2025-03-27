@@ -1,11 +1,5 @@
 name: Vendor
 on:
-  push:
-    branches:
-      - main
-    paths:
-      - 'vendor.py'
-      - 'src/duckdb'
   workflow_call:
     inputs:
       duckdb-sha:
