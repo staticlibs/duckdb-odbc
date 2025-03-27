@@ -51,11 +51,11 @@ jobs:
           echo "Updating vendored DuckDB sources to $REV"
           git config --global user.email "github_bot@duckdblabs.com"
           git config --global user.name "DuckDB Labs GitHub Bot"
+          git checkout vendoring
           git rm -rf src/duckdb
           python vendor.py --duckdb .git/duckdb
           git add src/duckdb CMakeLists.txt
           rm -rf .git/duckdb
-          git checkout vendoring
           git commit -m "Update vendored DuckDB sources to $REV"
           git push -f --dry-run origin vendoring
           # Check if ahead of upstream branch
