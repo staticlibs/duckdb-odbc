@@ -18,19 +18,20 @@ jobs:
         uses: ./.github/actions/pr_comment_head_branch
 
       - name: Merge
-        if: github.repository == 'staticlibs/duckdb-odbc' && steps.pr_comment_head_branch.outputs.head_branch == 'vendoring'
+        if: github.repository == 'staticlibs/duckdb-odbc'
         shell: bash
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
+            echo "steps.pr_comment_head_branch.outputs.head_branch: ${{ steps.pr_comment_head_branch.outputs.head_branch }}"
             echo "${{ secrets.GH_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
-            gh auth login --with-token < token.txt
-            gh pr merge vendoring \
-             --subject "${{ github.event.comment.body }}" \
-             --body "" \
-             --rebase
-            git push --delete origin vendoring
-            git branch vendoring
-            git push -f origin vendoring
+            #gh auth login --with-token < token.txt
+            #gh pr merge vendoring \
+            # --subject "${{ github.event.comment.body }}" \
+            # --body "" \
+            # --rebase
+            #git push --delete origin vendoring
+            #git branch vendoring
+            #git push -f origin vendoring

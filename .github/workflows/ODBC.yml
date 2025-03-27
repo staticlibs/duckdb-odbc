@@ -5,8 +5,6 @@ on:
       - vendoring
       - main
   pull_request:
-    branches-ignore:
-      - vendoring
   workflow_dispatch:
   workflow_call:
   repository_dispatch:
@@ -23,6 +21,7 @@ concurrency:
 jobs:
   odbc-linux-amd64:
     name: ODBC Linux (amd64)
+    if: ${{ !(github.event_name == 'pull_request' && github.head_ref == 'vendoring') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -342,6 +341,7 @@ jobs:
 
   odbc-merge-vendoring-pr:
     name: Merge vendoring PR 
+    if: false
     needs:
       - odbc-linux-amd64
       - odbc-linux-aarch64
