@@ -13,7 +13,7 @@ jobs:
 
       - name: Merge vendoring PR
         id: merge_vendoring_pr
-        if: ${{ github.repository == 'staticlibs/duckdb-odbc' && github.event_name == 'pull_request' && github.head_ref == 'vendoring' }}
+        if: ${{ false && github.repository == 'staticlibs/duckdb-odbc' && github.event_name == 'pull_request' && github.head_ref == 'vendoring' }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
