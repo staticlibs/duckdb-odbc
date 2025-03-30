@@ -117,13 +117,11 @@ jobs:
         id: create_pr
         if: ${{ steps.check_pr_exists.outcome == 'success' && !steps.check_pr_exists.outputs.pr_num }}
         run: |
-            # This command will fail if PR already exists on vendoring branch
             gh pr create \
-             --title "${{ steps.vendor.outputs.commit_msg }}" \
+             --title "${{ steps.commit_and_push.outputs.commit_msg }}" \
              --body "Changes:" \
              --head "vendoring" \
-             --base "main" \
-             || true
+             --base "main"
 
       - name: Update PR
         id: update_pr
@@ -139,7 +137,7 @@ jobs:
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr edit ${{ steps.check_pr_exists.outputs.pr_num }} \
-             --title "${{ steps.vendor.outputs.commit_msg }}" \
+             --title "${{ steps.commit_and_push.outputs.commit_msg }}" \
              --body-file body.txt 
             # Close and re-open the PR to trigger the tests
             gh pr close ${{ steps.check_pr_exists.outputs.pr_num }}
