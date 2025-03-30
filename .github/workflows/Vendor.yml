@@ -32,9 +32,6 @@ jobs:
         with:
           python-version: '3.12'
 
-      - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
-
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4

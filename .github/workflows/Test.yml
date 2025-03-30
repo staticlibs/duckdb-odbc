@@ -7,9 +7,6 @@ jobs:
     name: ODBC vendoring dispatch 
     runs-on: ubuntu-latest
     steps:
-      - name: Set up GitHub CLI
-        uses: cli/gh-action@v2
-
       - name: Merge vendoring PR
         id: merge_vendoring_pr
         if: ${{ github.repository == 'staticlibs/duckdb-odbc' && github.event_name == 'pull_request' && github.head_ref == 'vendoring' }}
