@@ -120,7 +120,7 @@ jobs:
             DATE="$(date +"%Y-%m-%d %H:%M:%S")"
             CHANGE_LABEL="duckdb/duckdb#${{ steps.vendor.outputs.vendor_rev }}"
             CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
-            MSG=" - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})"
+            MSG=" - [${CHANGE_LABEL}](${CHANGE_URL}) (imported at: ${DATE})"
             echo "PR message: ${MSG}"
             echo "pr_msg=${MSG}" >> "${GITHUB_OUTPUT}"
 
