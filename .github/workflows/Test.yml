@@ -15,13 +15,18 @@ jobs:
         id: merge_vendoring_pr
         if: ${{ github.repository == 'staticlibs/duckdb-odbc' && github.event_name == 'pull_request' && github.head_ref == 'vendoring' }}
         run: |
-            # Store the PAT in a file that can be accessed by the
-            # GitHub CLI.
-            echo "${{ secrets.PAT_TOKEN }}" > token.txt
+            # Store the default workflow token in a file that can be
+            # accessed by the GitHub CLI.
+            echo "${{ secrets.GITHUB_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
             gh auth login --with-token < token.txt
+            # echo "Merging PR number: ${{ github.event.pull_request.number }} with message: ${{ github.event.pull_request.title }}"
             gh pr merge vendoring \
              --rebase \
              --subject "${{ github.event.pull_request.title }}" \
              --body ""
+            # Delete vendoring barnch and re-create it for future PRs
+            git push --delete origin vendoring
+            git branch vendoring
+            git push origin vendoring

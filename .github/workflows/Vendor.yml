@@ -94,7 +94,10 @@ jobs:
         if: ${{ steps.commit_and_push.outputs.push_performed }}
         run: |
           # Store the PAT in a file that can be accessed by the
-          # GitHub CLI.
+          # GitHub CLI. We cannot use default workflow token
+          # GITHUB_TOKEN, because it is restricted to not trigger
+          # 'pull_request' event that we need to dispatch testing
+          # workflow.
           echo "${{ secrets.PAT_TOKEN }}" > token.txt
           # Authorize GitHub CLI for the current repository
           gh auth login --with-token < token.txt
@@ -120,7 +123,7 @@ jobs:
             DATE="$(date +"%Y-%m-%d %H:%M:%S")"
             CHANGE_LABEL="duckdb/duckdb#${{ steps.vendor.outputs.vendor_rev }}"
             CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
-            MSG=" - [${CHANGE_LABEL}](${CHANGE_URL}) (imported at: ${DATE})"
+            MSG=" - [${CHANGE_LABEL}](${CHANGE_URL}) imported at ${DATE}"
             echo "PR message: ${MSG}"
             echo "pr_msg=${MSG}" >> "${GITHUB_OUTPUT}"
 
