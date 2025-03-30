@@ -77,7 +77,7 @@ jobs:
         id: commit_and_push
         if: ${{ steps.vendor.outcome == 'success' }}
         run: |
-          MSG="Update vendored DuckDB sources to ${REV}"
+          MSG="Update vendored DuckDB sources to ${{ steps.vendor.outputs.vendor_rev }}"
           git commit -m "${MSG}"
           # Check if ahead of upstream branch
           # If yes, set a step output
@@ -121,7 +121,8 @@ jobs:
             CHANGE_LABEL="duckdb/duckdb#${{ steps.vendor.outputs.vendor_rev }}"
             CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
             MSG=" - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})"
-            echo "message=${MSG}" >> "${GITHUB_OUTPUT}"
+            echo "PR message: ${MSG}"
+            echo "pr_msg=${MSG}" >> "${GITHUB_OUTPUT}"
 
       - name: Create PR
         id: create_pr
@@ -129,7 +130,7 @@ jobs:
         run: |
             # Write multiline PR msg to a body.txt file 
             echo "Changes:" > body.txt
-            echo "${{ steps.prepare_pr_message.ouputs.message }}" >> body.txt
+            echo "${{ steps.prepare_pr_message.ouputs.pr_msg }}" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr create \
@@ -145,7 +146,7 @@ jobs:
             # Write existing PR body text to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
             # Append change description
-            echo "${{ steps.prepare_pr_message.ouputs.message }}" >> body.txt
+            echo "${{ steps.prepare_pr_message.ouputs.pr_msg }}" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr edit ${{ steps.check_pr_exists.outputs.pr_num }} \
