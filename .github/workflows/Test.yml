@@ -13,11 +13,11 @@ jobs:
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
-            echo "${{ secrets.GITHUB_TOKEN }}" > token.txt
+            echo "${{ secrets.PAT_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
             gh auth login --with-token < token.txt
             gh pr merge vendoring \
+             --rebase \
              --subject "${{ github.event.pull_request.title }}" \
-             --body "" \
-             --rebase
+             --body ""

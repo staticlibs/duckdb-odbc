@@ -95,7 +95,7 @@ jobs:
         run: |
           # Store the PAT in a file that can be accessed by the
           # GitHub CLI.
-          echo "${{ secrets.GITHUB_TOKEN }}" > token.txt
+          echo "${{ secrets.PAT_TOKEN }}" > token.txt
           # Authorize GitHub CLI for the current repository
           gh auth login --with-token < token.txt
 
@@ -104,36 +104,48 @@ jobs:
         if: ${{ steps.auth_gh_cli.outcome == 'success' }}
         run: |
           PR_NUM=$(gh pr list --head vendoring --json number --jq '.[].number')
-          if [ -z "$PR_NUM" ]; then
+          if [ -z "${PR_NUM}" ]; then
             echo "No PR exists for branch vendoring"
-            echo "pr_exists=false" >> "$GITHUB_OUTPUT"
+            echo "pr_exists=false" >> "${GITHUB_OUTPUT}"
           else
-            echo "PR found for branch vendoring, number: $PR_NUM"
-            echo "pr_exists=true" >> "$GITHUB_OUTPUT"
-            echo "pr_num=$PR_NUM" >> "$GITHUB_OUTPUT"
+            echo "PR found for branch vendoring, number: ${PR_NUM}"
+            echo "pr_exists=true" >> "${GITHUB_OUTPUT}"
+            echo "pr_num=${PR_NUM}" >> "${GITHUB_OUTPUT}"
           fi
+
+      - name: Prepare PR message
+        id: prepare_pr_message
+        if: ${{ steps.check_pr_exists.outcome == 'success' }}
+        run: |
+            DATE="$(date +"%Y-%m-%d %H:%M:%S")"
+            CHANGE_LABEL="duckdb/duckdb#${{ steps.vendor.outputs.vendor_rev }}"
+            CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
+            MSG=" - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})"
+            echo "message=${MSG}" >> "${GITHUB_OUTPUT}"
 
       - name: Create PR
         id: create_pr
-        if: ${{ steps.check_pr_exists.outcome == 'success' && !steps.check_pr_exists.outputs.pr_num }}
+        if: ${{ steps.prepare_pr_message.outcome == 'success' && steps.check_pr_exists.outputs.pr_exists == 'false' }}
         run: |
+            # Write multiline PR msg to a body.txt file 
+            echo "Changes:" > body.txt
+            echo "${{ steps.prepare_pr_message.ouputs.message }}" >> body.txt
+            # Remove empty lines
+            sed -i '/^$/d' body.txt
             gh pr create \
-             --title "${{ steps.commit_and_push.outputs.commit_msg }}" \
-             --body "Changes:" \
              --head "vendoring" \
-             --base "main"
+             --base "main" \
+             --title "${{ steps.commit_and_push.outputs.commit_msg }}" \
+             --body-file body.txt
 
       - name: Update PR
         id: update_pr
-        if: ${{ steps.check_pr_exists.outcome == 'success' && steps.check_pr_exists.outputs.pr_num }}
+        if: ${{ steps.prepare_pr_message.outcome == 'success' && steps.check_pr_exists.outputs.pr_exists == 'true' }}
         run: |
             # Write existing PR body text to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
-            # Append change details to the body file
-            DATE="$(date +"%Y-%m-%d %H:%M:%S")"
-            CHANGE_LABEL="duckdb/duckdb#${{ steps.vendor.outputs.vendor }}"
-            CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor }}"
-            echo " - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})" >> body.txt
+            # Append change description
+            echo "${{ steps.prepare_pr_message.ouputs.message }}" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr edit ${{ steps.check_pr_exists.outputs.pr_num }} \
