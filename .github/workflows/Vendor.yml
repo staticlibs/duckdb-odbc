@@ -122,6 +122,7 @@ jobs:
             CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
             MSG=" - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})"
             echo "PR message: ${MSG}"
+            MSG=foo
             echo "pr_msg=${MSG}" >> "${GITHUB_OUTPUT}"
 
       - name: Create PR
