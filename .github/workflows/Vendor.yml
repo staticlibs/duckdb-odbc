@@ -92,6 +92,8 @@ jobs:
       - name: Check PR exists
         id: check_pr_exists
         if: ${{ steps.commit_and_push.outcome == 'success' }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           PR_NUM=$(gh pr list --head vendoring --json number --jq '.[].number')
           if [ -z "${PR_NUM}" ]; then
