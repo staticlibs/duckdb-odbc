@@ -10,6 +10,8 @@ jobs:
       - name: Checkout
         id: checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Merge vendoring PR
         id: merge_vendoring_pr
@@ -25,6 +27,6 @@ jobs:
             # Delete vendoring barnch and re-create it for future PRs
             git push --delete origin vendoring
             git checkout --track origin/main
-            git pull  --ff-only
+            git pull --ff-only
             git branch vendoring
             git push origin vendoring
