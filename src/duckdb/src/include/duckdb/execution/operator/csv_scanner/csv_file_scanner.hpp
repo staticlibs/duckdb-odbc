@@ -47,7 +47,7 @@ public:
 
 public:
 	idx_t GetFileIndex() const {
-		return reader_data.file_list_idx.GetIndex();
+		return file_list_idx.GetIndex();
 	}
 	const vector<string> &GetNames();
 	const vector<LogicalType> &GetTypes();
@@ -56,6 +56,15 @@ public:
 
 	//! Initialize the actual names and types to be scanned from the file
 	void InitializeFileNamesTypes();
+
+	string GetReaderType() const override {
+		return "CSV";
+	}
+
+	bool UseCastMap() const override {
+		//! Whether or not to push casts into the cast map
+		return true;
+	}
 
 public:
 	//! Buffer Manager for the CSV File

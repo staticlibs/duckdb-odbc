@@ -46,6 +46,8 @@
 
 #include "src/common/multi_file_reader.cpp"
 
+#include "src/common/multi_file_reader_column_mapper.cpp"
+
 #include "src/common/error_data.cpp"
 
 #include "src/common/opener_file_system.cpp"
