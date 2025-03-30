@@ -15,17 +15,20 @@
 namespace duckdb {
 
 PhysicalBatchInsert::PhysicalBatchInsert(vector<LogicalType> types_p, TableCatalogEntry &table,
+                                         physical_index_vector_t<idx_t> column_index_map_p,
+                                         vector<unique_ptr<Expression>> bound_defaults_p,
                                          vector<unique_ptr<BoundConstraint>> bound_constraints_p,
                                          idx_t estimated_cardinality)
     : PhysicalOperator(PhysicalOperatorType::BATCH_INSERT, std::move(types_p), estimated_cardinality),
-      insert_table(&table), insert_types(table.GetTypes()), bound_constraints(std::move(bound_constraints_p)) {
+      column_index_map(std::move(column_index_map_p)), insert_table(&table), insert_types(table.GetTypes()),
+      bound_defaults(std::move(bound_defaults_p)), bound_constraints(std::move(bound_constraints_p)) {
 }
 
 PhysicalBatchInsert::PhysicalBatchInsert(LogicalOperator &op, SchemaCatalogEntry &schema,
                                          unique_ptr<BoundCreateTableInfo> info_p, idx_t estimated_cardinality)
     : PhysicalOperator(PhysicalOperatorType::BATCH_CREATE_TABLE_AS, op.types, estimated_cardinality),
       insert_table(nullptr), schema(&schema), info(std::move(info_p)) {
-	PhysicalInsert::GetInsertInfo(*info, insert_types);
+	PhysicalInsert::GetInsertInfo(*info, insert_types, bound_defaults);
 }
 
 //===--------------------------------------------------------------------===//
@@ -179,11 +182,15 @@ public:
 
 class BatchInsertLocalState : public LocalSinkState {
 public:
-	BatchInsertLocalState(ClientContext &context, const vector<LogicalType> &types)
-	    : collection_index(DConstants::INVALID_INDEX) {
+	BatchInsertLocalState(ClientContext &context, const vector<LogicalType> &types,
+	                      const vector<unique_ptr<Expression>> &bound_defaults)
+	    : default_executor(context, bound_defaults), collection_index(DConstants::INVALID_INDEX) {
+		insert_chunk.Initialize(Allocator::Get(context), types);
 	}
 
-	idx_t current_index = 0;
+	DataChunk insert_chunk;
+	ExpressionExecutor default_executor;
+	idx_t current_index;
 	TableAppendState current_append_state;
 	PhysicalIndex collection_index;
 	unique_ptr<OptimisticDataWriter> optimistic_writer;
@@ -426,7 +433,7 @@ unique_ptr<GlobalSinkState> PhysicalBatchInsert::GetGlobalSinkState(ClientContex
 }
 
 unique_ptr<LocalSinkState> PhysicalBatchInsert::GetLocalSinkState(ExecutionContext &context) const {
-	return make_uniq<BatchInsertLocalState>(context.client, insert_types);
+	return make_uniq<BatchInsertLocalState>(context.client, insert_types, bound_defaults);
 }
 
 //===--------------------------------------------------------------------===//
@@ -491,14 +498,13 @@ SinkNextBatchType PhysicalBatchInsert::NextBatch(ExecutionContext &context, Oper
 //===--------------------------------------------------------------------===//
 // Sink
 //===--------------------------------------------------------------------===//
-SinkResultType PhysicalBatchInsert::Sink(ExecutionContext &context, DataChunk &insert_chunk,
-                                         OperatorSinkInput &input) const {
+SinkResultType PhysicalBatchInsert::Sink(ExecutionContext &context, DataChunk &chunk, OperatorSinkInput &input) const {
 	auto &gstate = input.global_state.Cast<BatchInsertGlobalState>();
 	auto &lstate = input.local_state.Cast<BatchInsertLocalState>();
 	auto &memory_manager = gstate.memory_manager;
 
 	auto &table = gstate.table;
-	insert_chunk.Flatten();
+	PhysicalInsert::ResolveDefaults(table, chunk, column_index_map, lstate.default_executor, lstate.insert_chunk);
 
 	auto batch_index = lstate.partition_info.batch_index.GetIndex();
 	// check if we should process this batch
@@ -540,11 +546,11 @@ SinkResultType PhysicalBatchInsert::Sink(ExecutionContext &context, DataChunk &i
 	auto &storage = table.GetStorage();
 	auto &local_storage = LocalStorage::Get(context.client, storage.db);
 	auto local_table_storage = local_storage.GetStorage(table.GetStorage());
-	storage.VerifyAppendConstraints(*lstate.constraint_state, context.client, insert_chunk, local_table_storage,
+	storage.VerifyAppendConstraints(*lstate.constraint_state, context.client, lstate.insert_chunk, local_table_storage,
 	                                nullptr);
 
 	auto &collection = table.GetStorage().GetOptimisticCollection(context.client, lstate.collection_index);
-	auto new_row_group = collection.Append(insert_chunk, lstate.current_append_state);
+	auto new_row_group = collection.Append(lstate.insert_chunk, lstate.current_append_state);
 	if (new_row_group) {
 		// we have already written to disk - flush the next row group as well
 		lstate.optimistic_writer->WriteNewRowGroup(collection);
