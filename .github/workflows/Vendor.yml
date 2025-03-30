@@ -89,22 +89,9 @@ jobs:
             echo "commit_msg=${MSG}" >> "${GITHUB_OUTPUT}"
           fi
 
-      - name: Auth GH CLI
-        id: auth_gh_cli
-        if: ${{ steps.commit_and_push.outputs.push_performed }}
-        run: |
-          # Store the PAT in a file that can be accessed by the
-          # GitHub CLI. We cannot use default workflow token
-          # GITHUB_TOKEN, because it is restricted to not trigger
-          # 'pull_request' event that we need to dispatch testing
-          # workflow.
-          echo "${{ secrets.PAT_TOKEN }}" > token.txt
-          # Authorize GitHub CLI for the current repository
-          gh auth login --with-token < token.txt
-
       - name: Check PR exists
         id: check_pr_exists
-        if: ${{ steps.auth_gh_cli.outcome == 'success' }}
+        if: ${{ steps.commit_and_push.outcome == 'success' }}
         run: |
           PR_NUM=$(gh pr list --head vendoring --json number --jq '.[].number')
           if [ -z "${PR_NUM}" ]; then
@@ -130,6 +117,11 @@ jobs:
       - name: Create PR
         id: create_pr
         if: ${{ steps.prepare_pr_message.outcome == 'success' && steps.check_pr_exists.outputs.pr_exists == 'false' }}
+        env:
+          # We cannot use default workflow's GITHUB_TOKEN here, because
+          # it is restricted to not trigger 'pull_request' event that
+          # we need to dispatch the testing workflow.
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
             # Write multiline PR msg to a body.txt file 
             echo "Changes:" > body.txt
@@ -145,6 +137,11 @@ jobs:
       - name: Update PR
         id: update_pr
         if: ${{ steps.prepare_pr_message.outcome == 'success' && steps.check_pr_exists.outputs.pr_exists == 'true' }}
+        env:
+          # We cannot use default workflow's GITHUB_TOKEN here, because
+          # it is restricted to not trigger 'pull_request' event that
+          # we need to dispatch the testing workflow.
+          GH_TOKEN: ${{ secrets.PAT_TOKEN }}
         run: |
             # Write existing PR body text to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
