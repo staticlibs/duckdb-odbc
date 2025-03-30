@@ -24,5 +24,7 @@ jobs:
              --body ""
             # Delete vendoring barnch and re-create it for future PRs
             git push --delete origin vendoring
+            git checkout main
+            git pull
             git branch vendoring
             git push origin vendoring
