@@ -1,38 +1,26 @@
 name: Test
 on:
-  issue_comment:
-    types: 
-      - created
+  pull_request:
 
 jobs:
   odbc-vendoring-dispatch:
     name: ODBC vendoring dispatch 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+      - name: Set up GitHub CLI
+        uses: cli/gh-action@v2
 
-      - name: PR comment HEAD branch
-        id: pr_comment_head_branch
-        uses: ./.github/actions/pr_comment_head_branch
-
-      - name: Merge
-        if: github.repository == 'staticlibs/duckdb-odbc'
-        shell: bash
+      - name: Merge vendoring PR
+        id: merge_vendoring_pr
+        if: ${{ github.repository == 'staticlibs/duckdb-odbc' && github.event_name == 'pull_request' && github.head_ref == 'vendoring' }}
         run: |
             # Store the PAT in a file that can be accessed by the
             # GitHub CLI.
-            echo "steps.pr_comment_head_branch.outputs: ${{ toJSON(steps.pr_comment_head_branch.outputs) }}"
-            echo "steps.pr_comment_head_branch.outputs.head_branch: ${{ steps.pr_comment_head_branch.outputs.head_branch }}"
-            echo "${{ secrets.GH_TOKEN }}" > token.txt
+            echo "${{ secrets.GITHUB_TOKEN }}" > token.txt
             # Authorize GitHub CLI for the current repository and
             # create a pull-requests containing the updates.
-            #gh auth login --with-token < token.txt
-            #gh pr merge vendoring \
-            # --subject "${{ github.event.comment.body }}" \
-            # --body "" \
-            # --rebase
-            #git push --delete origin vendoring
-            #git branch vendoring
-            #git push -f origin vendoring
+            gh auth login --with-token < token.txt
+            gh pr merge vendoring \
+             --subject "${{ github.event.pull_request.title }}" \
+             --body "" \
+             --rebase
