@@ -122,7 +122,6 @@ jobs:
             CHANGE_URL="https://github.com/duckdb/duckdb/commit/${{ steps.vendor.outputs.vendor_rev }}"
             MSG=" - ${DATE} [${CHANGE_LABEL}](${CHANGE_URL})"
             echo "PR message: ${MSG}"
-            MSG=foo
             echo "pr_msg=${MSG}" >> "${GITHUB_OUTPUT}"
 
       - name: Create PR
@@ -131,7 +130,7 @@ jobs:
         run: |
             # Write multiline PR msg to a body.txt file 
             echo "Changes:" > body.txt
-            echo "${{ steps.prepare_pr_message.ouputs.pr_msg }}" >> body.txt
+            echo "${{ steps.prepare_pr_message.outputs.pr_msg }}" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr create \
@@ -147,7 +146,7 @@ jobs:
             # Write existing PR body text to a file
             gh pr view vendoring --json body --jq '.body' > body.txt
             # Append change description
-            echo "${{ steps.prepare_pr_message.ouputs.pr_msg }}" >> body.txt
+            echo "${{ steps.prepare_pr_message.outputs.pr_msg }}" >> body.txt
             # Remove empty lines
             sed -i '/^$/d' body.txt
             gh pr edit ${{ steps.check_pr_exists.outputs.pr_num }} \
