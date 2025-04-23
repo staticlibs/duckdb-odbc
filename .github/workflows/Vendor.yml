@@ -130,7 +130,7 @@ jobs:
             sed -i '/^$/d' body.txt
             gh pr create \
              --head "vendoring-${{ github.ref_name }}" \
-             --base "main" \
+             --base "${{ github.ref_name }}" \
              --title "${{ steps.commit_and_push.outputs.commit_msg }}" \
              --body-file body.txt
 
