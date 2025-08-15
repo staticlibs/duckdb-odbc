@@ -140,7 +140,7 @@ jobs:
 
   odbc-windows-amd64:
     name: ODBC Windows (amd64)
-    runs-on: windows-latest
+    runs-on: windows-2025
     needs: odbc-linux-amd64
     env:
       AZURE_CODESIGN_ENDPOINT: https://eus.codesigning.azure.net/
