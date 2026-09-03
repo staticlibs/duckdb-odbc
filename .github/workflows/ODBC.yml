@@ -662,6 +662,7 @@ jobs:
             dotnet-sdk-8.0 \
             ninja-build \
             odbcinst \
+            unixodbc \
             unixodbc-dev
 
       - name: Cache Key
