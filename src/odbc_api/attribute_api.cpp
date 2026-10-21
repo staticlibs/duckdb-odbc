@@ -316,10 +316,12 @@ static SQLRETURN SetConnectAttrInternal(SQLHDBC connection_handle, SQLINTEGER at
 		switch ((ptrdiff_t)value_ptr) {
 		case (ptrdiff_t)SQL_AUTOCOMMIT_ON:
 			dbc->autocommit = true;
+			dbc->MaterializeStreams();
 			dbc->conn->SetAutoCommit(true);
 			return SQL_SUCCESS;
 		case (ptrdiff_t)SQL_AUTOCOMMIT_OFF:
 			dbc->autocommit = false;
+			dbc->MaterializeStreams();
 			dbc->conn->SetAutoCommit(false);
 			return SQL_SUCCESS;
 		case SQL_ATTR_METADATA_ID: {

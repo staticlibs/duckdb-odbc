@@ -36,6 +36,7 @@ add_executable(
   tests/test_param_array_fixed_types.cpp
   tests/test_select.cpp
   tests/test_session_init.cpp
+  tests/test_stream_results.cpp
   tests/test_truncation.cpp
   tests/test_timestamp.cpp
   tests/test_unbound_params.cpp

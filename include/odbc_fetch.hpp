@@ -67,8 +67,6 @@ public:
 
 	void ClearChunks();
 
-	SQLRETURN Materialize(OdbcHandleStmt *hstmt);
-
 	void ResetLastFetchedVariableVal();
 	void SetLastFetchedVariableVal(row_t col_idx);
 	void SetLastFetchedLength(size_t new_len);

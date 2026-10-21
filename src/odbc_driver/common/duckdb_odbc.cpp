@@ -63,12 +63,12 @@ void OdbcHandleDbc::EraseStmtRef(OdbcHandleStmt *stmt) {
 	}
 }
 
-SQLRETURN OdbcHandleDbc::MaterializeResult() {
-	if (vec_stmt_ref.empty()) {
-		return SQL_SUCCESS;
+void OdbcHandleDbc::MaterializeStreams() {
+	for (auto stmt : vec_stmt_ref) {
+		if (stmt->res) {
+			stmt->res->Materialize();
+		}
 	}
-	// only materializing the result set from the last statement
-	return vec_stmt_ref.back()->MaterializeResult();
 }
 
 void OdbcHandleDbc::ResetStmtDescriptors(OdbcHandleDesc *old_desc) {
@@ -120,16 +120,6 @@ void OdbcHandleStmt::Close() {
 	// the parameter values can be reused after
 	param_desc->Reset();
 	// stmt->stmt.reset(); // the statment can be reuse in prepared statement
-}
-
-SQLRETURN OdbcHandleStmt::MaterializeResult() {
-	if (!stmt || stmt->HasError()) {
-		return SQL_SUCCESS;
-	}
-	if (!res || res->HasError()) {
-		return SQL_SUCCESS;
-	}
-	return odbc_fetcher->Materialize(this);
 }
 
 void OdbcHandleStmt::SetARD(OdbcHandleDesc *new_ard) {

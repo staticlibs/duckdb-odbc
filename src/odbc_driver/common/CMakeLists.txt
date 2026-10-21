@@ -6,6 +6,7 @@ add_library(
   odbc_diagnostic.cpp
   odbc_fetch.cpp
   odbc_interval.cpp
+  odbc_result.cpp
   odbc_utils.cpp)
 
 target_compile_definitions(odbc_common PRIVATE -DDUCKDB_STATIC_BUILD)

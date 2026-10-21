@@ -29,10 +29,7 @@ SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handle_type, SQLHANDLE handle, SQLSMALL
 	switch (completion_type) {
 	case SQL_COMMIT:
 		// it needs to materialize the result set because ODBC can still fetch after a commit
-		if (dbc->MaterializeResult() != SQL_SUCCESS) {
-			// for some reason we couldn't materialize the result set
-			return SQL_ERROR; // TODO add a proper error message
-		}
+		dbc->MaterializeStreams();
 		if (dbc->conn->IsAutoCommit()) {
 			return SQL_SUCCESS;
 		}
@@ -40,6 +37,7 @@ SQLRETURN SQL_API SQLEndTran(SQLSMALLINT handle_type, SQLHANDLE handle, SQLSMALL
 		return SQL_SUCCESS;
 	case SQL_ROLLBACK:
 		try {
+			dbc->MaterializeStreams();
 			dbc->conn->Rollback();
 			return SQL_SUCCESS;
 		} catch (std::exception &ex) {

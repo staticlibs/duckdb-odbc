@@ -37,6 +37,9 @@ public:
 		return success_with_info;
 	}
 
+	// ODBC-local option to enable or disable streaming of the query results
+	static const std::string STREAM_RESULTS_OPTION;
+
 private:
 	// Ignore keys automatically added by Excel, PowerBI and other popular ODBC clients
 	static const std::vector<std::string> IGNORE_KEYS;

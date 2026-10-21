@@ -33,6 +33,7 @@ using duckdb::LogicalType;
 using duckdb::LogicalTypeId;
 using duckdb::OdbcDiagnostic;
 using duckdb::OdbcInterval;
+using duckdb::OdbcResult;
 using duckdb::OdbcUtils;
 using duckdb::SQLStateType;
 using duckdb::Store;
@@ -135,7 +136,8 @@ SQLRETURN duckdb::SingleExecuteStmt(OdbcHandleStmt *hstmt) {
 		return ret;
 	}
 
-	hstmt->res = hstmt->stmt->Execute(values);
+	hstmt->dbc->MaterializeStreams();
+	hstmt->res = OdbcResult::Execute(*hstmt->stmt, values, hstmt->dbc->stream_results);
 
 	if (hstmt->res->HasError()) {
 		return duckdb::SetDiagnosticRecord(hstmt, SQL_ERROR, "SingleExecuteStmt", hstmt->res->GetError(),
@@ -965,6 +967,7 @@ SQLRETURN duckdb::ExecDirectStmt(OdbcHandleStmt *hstmt, const std::string &query
 
 	SQLRETURN ret = SQL_SUCCESS;
 	for (auto &statement : statements) {
+		hstmt->dbc->MaterializeStreams();
 		hstmt->stmt = hstmt->dbc->conn->Prepare(std::move(statement));
 		ret = FinalizeStmt(hstmt);
 		if (hstmt->stmt->HasError() || !SQL_SUCCEEDED(ret)) {

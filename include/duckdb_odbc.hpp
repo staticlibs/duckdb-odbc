@@ -9,6 +9,7 @@
 #include "descriptor.hpp"
 #include "odbc_diagnostic.hpp"
 #include "odbc_utils.hpp"
+#include "odbc_result.hpp"
 
 #include <sqltypes.h>
 #include <sqlext.h>
@@ -70,7 +71,9 @@ public:
 	};
 	~OdbcHandleDbc();
 	void EraseStmtRef(OdbcHandleStmt *stmt);
-	SQLRETURN MaterializeResult();
+	//! Drains into memory the streamed results of all statements of this connection,
+	//! must be called before running anything else on the connection
+	void MaterializeStreams();
 	void ResetStmtDescriptors(OdbcHandleDesc *old_desc);
 
 	void SetDatabaseName(const string &db_name);
@@ -90,6 +93,8 @@ public:
 	std::string dsn;
 	// reference to an open statement handled by this connection
 	vector<OdbcHandleStmt *> vec_stmt_ref;
+	// stream query results instead of buffering them in memory, see 'odbc_stream_results' option
+	bool stream_results = true;
 };
 
 struct OdbcBoundCol {
@@ -122,7 +127,6 @@ public:
 	explicit OdbcHandleStmt(OdbcHandleDbc *dbc_p);
 	~OdbcHandleStmt();
 	void Close();
-	SQLRETURN MaterializeResult();
 	void SetARD(OdbcHandleDesc *new_ard);
 	void SetAPD(OdbcHandleDesc *new_apd);
 	bool IsPrepared() {
@@ -133,7 +137,7 @@ public:
 public:
 	OdbcHandleDbc *dbc;
 	duckdb::unique_ptr<PreparedStatement> stmt;
-	duckdb::unique_ptr<QueryResult> res;
+	duckdb::unique_ptr<OdbcResult> res;
 	vector<OdbcBoundCol> bound_cols;
 	bool open;
 	SQLULEN retrieve_data = SQL_RD_ON;

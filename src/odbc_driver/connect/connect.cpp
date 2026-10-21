@@ -19,6 +19,8 @@ const std::vector<std::string> Connect::IGNORE_KEYS = {
     "pwd",                // likewise uid
 };
 
+const std::string Connect::STREAM_RESULTS_OPTION = "odbc_stream_results";
+
 bool Connect::SetSuccessWithInfo(SQLRETURN ret) {
 	if (!SQL_SUCCEEDED(ret)) {
 		return false;
@@ -168,11 +170,14 @@ SQLRETURN Connect::SetConnection() {
 	std::string session_init_sql_file_sha256 = GetOptionFromConfigMap(SessionInit::SQL_FILE_SHA256_OPTION);
 	SessionInitSQLFile session_init_content;
 
+	std::string stream_results = GetOptionFromConfigMap(STREAM_RESULTS_OPTION);
+
 	// Remove ODBC-local options from the config map
 	config_map.erase("database");
 	config_map.erase("dsn");
 	config_map.erase(SessionInit::SQL_FILE_OPTION);
 	config_map.erase(SessionInit::SQL_FILE_SHA256_OPTION);
+	config_map.erase(STREAM_RESULTS_OPTION);
 
 	// Remove 'enable_external_access' option because it is handled separately
 	config_map.erase("enable_external_access");
@@ -180,6 +185,11 @@ SQLRETURN Connect::SetConnection() {
 	bool db_created = false;
 	try {
 		session_init_content = SessionInit::ReadSQLFile(session_init_sql_file, session_init_sql_file_sha256);
+
+		dbc->stream_results = true;
+		if (!stream_results.empty()) {
+			dbc->stream_results = BooleanValue::Get(Value(stream_results).DefaultCastAs(LogicalType::BOOLEAN));
+		}
 
 		// Validate and set all options
 		identifier_map_t<Value> config_map_ids;
@@ -231,6 +241,7 @@ Connect::Connect(OdbcHandleDbc *dbc_p, string input_str_p) : dbc(dbc_p), input_s
 	seen_config_options["dsn"] = false;
 	seen_config_options[SessionInit::SQL_FILE_OPTION] = false;
 	seen_config_options[SessionInit::SQL_FILE_SHA256_OPTION] = false;
+	seen_config_options[STREAM_RESULTS_OPTION] = false;
 
 	// Required for settings like 'allowed_directories' that use
 	// file separator when checking the property value.

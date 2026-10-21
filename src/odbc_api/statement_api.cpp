@@ -25,6 +25,7 @@ static SQLRETURN PrepareInternal(SQLHSTMT statement_handle, SQLCHAR *statement_t
 
 	const auto query = OdbcUtils::ConvertSQLCHARToString(statement_text, text_length);
 	PrepareQuery(hstmt);
+	hstmt->dbc->MaterializeStreams();
 	hstmt->stmt = hstmt->dbc->conn->Prepare(query);
 
 	return FinalizeStmt(hstmt);
